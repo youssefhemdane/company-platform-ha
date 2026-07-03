@@ -31,7 +31,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy files to project directory
+      - name: Backup current working version
+        run: |
+          rm -rf /home/ubuntoserver/backups/rollback
+          mkdir -p /home/ubuntoserver/backups/rollback
+          cp -r /home/ubuntoserver/company-platform /home/ubuntoserver/backups/rollback/company-platform
+          cp -r /home/ubuntoserver/scripts /home/ubuntoserver/backups/rollback/scripts
+
+      - name: Copy new files to project directory
         run: |
           cp -r * /home/ubuntoserver/company-platform/
           cp scripts/*.sh /home/ubuntoserver/scripts/
@@ -43,9 +50,24 @@ jobs:
           docker compose up -d --build
 
       - name: Health check API VM1
+        id: healthcheck
         run: |
           sleep 10
           curl -f http://localhost:8000/api/users || exit 1
+
+      - name: Rollback on failure
+        if: failure() && steps.healthcheck.outcome == 'failure'
+        run: |
+          echo "Health check failed, rolling back to previous version..."
+          rm -rf /home/ubuntoserver/company-platform
+          rm -rf /home/ubuntoserver/scripts
+          cp -r /home/ubuntoserver/backups/rollback/company-platform /home/ubuntoserver/company-platform
+          cp -r /home/ubuntoserver/backups/rollback/scripts /home/ubuntoserver/scripts
+          chmod +x /home/ubuntoserver/scripts/*.sh
+          cd /home/ubuntoserver/company-platform
+          docker compose up -d --build
+          sleep 10
+          curl -f http://localhost:8000/api/users && echo "Rollback successful" || echo "Rollback health check also failed"
 
   deploy-vm2:
     needs: deploy-vm1
@@ -76,4 +98,4 @@ jobs:
         if: needs.test.result != 'success' || needs.deploy-vm1.result != 'success' || needs.deploy-vm2.result != 'success'
         run: |
           source /home/ubuntoserver/scripts/vault-helper.sh
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" -d text="Pipeline CI/CD ECHOUE (tests ou deploiement)"
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" -d text="Pipeline CI/CD ECHOUE - rollback automatique effectue si necessaire"
