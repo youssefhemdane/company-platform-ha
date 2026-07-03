@@ -3,3 +3,5 @@
 *.pem
 *.key
 vault-data/
+__pycache__/
+*.pyc
