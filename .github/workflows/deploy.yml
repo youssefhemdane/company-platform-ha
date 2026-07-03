@@ -12,9 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install shellcheck
-        run: sudo apt-get install -y shellcheck || true
-
       - name: Lint shell scripts
         run: |
           shellcheck scripts/*.sh || echo "Shellcheck warnings found (non-blocking)"
@@ -81,7 +78,7 @@ jobs:
           source /home/ubuntoserver/scripts/vault-helper.sh
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
             -d chat_id="$TELEGRAM_CHAT_ID" \
-            -d text="✅ Tests + Déploiement CI/CD réussis sur VM1 et VM2"
+            -d text="âœ… Tests + DÃ©ploiement CI/CD rÃ©ussis sur VM1 et VM2"
 
       - name: Notify failure via Telegram
         if: needs.test.result != 'success' || needs.deploy-vm1.result != 'success' || needs.deploy-vm2.result != 'success'
@@ -89,4 +86,4 @@ jobs:
           source /home/ubuntoserver/scripts/vault-helper.sh
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
             -d chat_id="$TELEGRAM_CHAT_ID" \
-            -d text="❌ Pipeline CI/CD ÉCHOUÉ (tests ou déploiement)"
+            -d text="âŒ Pipeline CI/CD Ã‰CHOUÃ‰ (tests ou dÃ©ploiement)"
