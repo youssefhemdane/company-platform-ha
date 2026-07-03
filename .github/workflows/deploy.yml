@@ -22,7 +22,7 @@ jobs:
 
       - name: Run pytest in Docker
         run: |
-          docker run --rm -v "$(pwd)/app:/app" -w /app python:3.11-slim bash -c "pip install -q -r requirements.txt && pytest tests/ -v"
+          docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd)/app:/app" -w /app -e HOME=/tmp python:3.11-slim bash -c "pip install -q -r requirements.txt --user && python -m pytest tests/ -v"
 
   deploy-vm1:
     needs: test
