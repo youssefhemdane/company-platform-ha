@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 app = FastAPI()
+raise Exception('Simulated crash for rollback test')
 
 
 def get_db_connection():
