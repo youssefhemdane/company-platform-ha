@@ -1,0 +1,5 @@
+﻿.env
+*.log
+*.pem
+*.key
+vault-data/
