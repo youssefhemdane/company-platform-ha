@@ -20,15 +20,9 @@ jobs:
         run: |
           docker compose -f docker-compose.yml config > /dev/null
 
-      - name: Set up Python
+      - name: Run pytest in Docker
         run: |
-          python3 -m venv /tmp/venv
-          /tmp/venv/bin/pip install -r app/requirements.txt
-
-      - name: Run pytest
-        run: |
-          cd app
-          /tmp/venv/bin/pytest tests/ -v
+          docker run --rm -v "$(pwd)/app:/app" -w /app python:3.11-slim bash -c "pip install -q -r requirements.txt && pytest tests/ -v"
 
   deploy-vm1:
     needs: test
