@@ -51,12 +51,13 @@ jobs:
 
       - name: Health check API VM1
         id: healthcheck
+        continue-on-error: true
         run: |
           sleep 10
-          curl -f http://localhost:8000/api/users || exit 1
+          curl -f http://localhost:8000/api/users
 
       - name: Rollback on failure
-        if: failure() && steps.healthcheck.outcome == 'failure'
+        if: steps.healthcheck.outcome == 'failure'
         run: |
           echo "Health check failed, rolling back to previous version..."
           rm -rf /home/ubuntoserver/company-platform
@@ -67,7 +68,14 @@ jobs:
           cd /home/ubuntoserver/company-platform
           docker compose up -d --build
           sleep 10
-          curl -f http://localhost:8000/api/users && echo "Rollback successful" || echo "Rollback health check also failed"
+          curl -f http://localhost:8000/api/users
+          echo "Rollback successful"
+
+      - name: Fail job if rollback also failed
+        if: steps.healthcheck.outcome == 'failure' && failure()
+        run: |
+          echo "Rollback health check also failed — VM1 is down!"
+          exit 1
 
   deploy-vm2:
     needs: deploy-vm1
