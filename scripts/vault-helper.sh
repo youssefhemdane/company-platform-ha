@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 VAULT_ADDR="http://192.168.1.100:8200"
 VAULT_TOKEN="${VAULT_TOKEN}"
 
