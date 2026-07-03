@@ -76,14 +76,10 @@ jobs:
         if: needs.test.result == 'success' && needs.deploy-vm1.result == 'success' && needs.deploy-vm2.result == 'success'
         run: |
           source /home/ubuntoserver/scripts/vault-helper.sh
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-            -d chat_id="$TELEGRAM_CHAT_ID" \
-            -d text="âœ… Tests + DÃ©ploiement CI/CD rÃ©ussis sur VM1 et VM2"
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" -d text="Tests et deploiement CI/CD reussis sur VM1 et VM2"
 
       - name: Notify failure via Telegram
         if: needs.test.result != 'success' || needs.deploy-vm1.result != 'success' || needs.deploy-vm2.result != 'success'
         run: |
           source /home/ubuntoserver/scripts/vault-helper.sh
-          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-            -d chat_id="$TELEGRAM_CHAT_ID" \
-            -d text="âŒ Pipeline CI/CD Ã‰CHOUÃ‰ (tests ou dÃ©ploiement)"
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" -d chat_id="$TELEGRAM_CHAT_ID" -d text="Pipeline CI/CD ECHOUE (tests ou deploiement)"
