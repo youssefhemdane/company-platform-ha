@@ -2,5 +2,5 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 psycopg2-binary==2.9.9
 requests
-pytest
-httpx
+pytest==7.4.3
+httpx==0.25.2
