@@ -1,0 +1,45 @@
+﻿name: Deploy VM1
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to project directory
+        run: |
+          cp -r * /home/ubuntoserver/company-platform/
+          cp scripts/*.sh /home/ubuntoserver/scripts/
+          chmod +x /home/ubuntoserver/scripts/*.sh
+
+      - name: Restart Docker services
+        run: |
+          cd /home/ubuntoserver/company-platform
+          docker compose up -d --build
+
+      - name: Health check API
+        run: |
+          sleep 10
+          curl -f http://localhost:8000/api/users || exit 1
+
+      - name: Notify success via Telegram
+        if: success()
+        run: |
+          source /home/ubuntoserver/scripts/vault-helper.sh
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d chat_id="$TELEGRAM_CHAT_ID" \
+            -d text="✅ Déploiement CI/CD réussi sur VM1"
+
+      - name: Notify failure via Telegram
+        if: failure()
+        run: |
+          source /home/ubuntoserver/scripts/vault-helper.sh
+          curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d chat_id="$TELEGRAM_CHAT_ID" \
+            -d text="❌ Déploiement CI/CD ÉCHOUÉ sur VM1"
